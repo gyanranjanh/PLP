@@ -28,7 +28,7 @@ public class ScannerTest {
 	@Test
 	public void testSemiConcat() throws IllegalCharException, IllegalNumberException {
 		//input string
-		String input = ";;;";:
+		String input = ";;;";
 		//create and initialize the scanner
 		Scanner scanner = new Scanner(input);
 		scanner.scan();

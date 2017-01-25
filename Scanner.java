@@ -85,9 +85,16 @@ public class Scanner {
 		IN_INT_LITERAL,       /* a token - a terminal state */
 		IN_IDENT_PART,
 		IN_IDENT_START,
-		//IN_AFTER_EQ,
 		IN_GOT_EQUAL,
 		IN_GOT_GREATER,
+		IN_GOT_LESS,
+		IN_GOT_NOT,
+		IN_GOT_MINUS,
+		IN_GOT_OR,
+		IN_GOT_ORMINUS,
+		IN_DIV,
+		IN_COMMENT,
+		IN_END_COMMENT,
 		ERROR,
 	}
 	
@@ -213,7 +220,7 @@ public class Scanner {
 		int startPos = 0;
 		int ch;
 		
-		while(pos <= length) {
+		while(pos < length) {
 			ch = pos < length ? chars.charAt(pos) : -1;
 			switch (state) {
 				case START:
@@ -239,14 +246,6 @@ public class Scanner {
 							break;
 						case '*':
 							tokens.add(new Token(Kind.TIMES, startPos, 1));
-							pos++;
-							break;
-						case '=':
-							state = State.IN_GOT_EQUAL;
-							pos++;
-							break;
-						case '>':
-							state = State.IN_GOT_GREATER;
 							pos++;
 							break;
 						case ';':
@@ -275,6 +274,34 @@ public class Scanner {
 							break;
 						case '0':
 							tokens.add(new Token(Kind.INT_LIT, startPos, 1));
+							pos++;
+							break;
+						case '=':
+							state = State.IN_GOT_EQUAL;
+							pos++;
+							break;
+						case '>':
+							state = State.IN_GOT_GREATER;
+							pos++;
+							break;
+						case '<':
+							state = State.IN_GOT_LESS;
+							pos++;
+							break;
+						case '!':
+							state = State.IN_GOT_NOT;
+							pos++;
+							break;
+						case '-':
+							state = State.IN_GOT_MINUS;
+							pos++;
+							break;
+						case '|':
+							state = State.IN_GOT_OR;
+							pos++;
+							break;
+						case '/':
+							state = State.IN_DIV;
 							pos++;
 							break;
 						default:
@@ -354,6 +381,78 @@ public class Scanner {
 						tokens.add(new Token(Kind.GT, startPos, 1));
 					}
 					state = State.START;
+					break;
+				case IN_GOT_LESS:
+					if (ch == '=') {
+						tokens.add(new Token(Kind.LE, startPos, pos - startPos));
+						pos++;						
+					} else if (ch == '-') {
+						tokens.add(new Token(Kind.ASSIGN, startPos, pos - startPos));
+						pos++;
+					} else {
+						tokens.add(new Token(Kind.LT, startPos, 1));
+					}
+					break;
+				case IN_GOT_NOT:
+					if (ch == '=') {
+						tokens.add(new Token(Kind.NOTEQUAL, startPos, pos - startPos));
+						pos++;
+					} else {
+						tokens.add(new Token(Kind.EQUAL, startPos, 1));
+					}
+					state = State.START;
+					break;
+				case IN_GOT_MINUS:
+					if (ch == '>') {
+						tokens.add(new Token(Kind.ARROW, startPos, pos - startPos));
+						pos++;
+					} else {
+						tokens.add(new Token(Kind.MINUS, startPos, 1));
+					}
+					state = State.START;
+					break;
+				case IN_GOT_OR:
+					if (ch == '-') {
+						state = State.IN_GOT_ORMINUS;
+						pos++;
+					} else {
+						tokens.add(new Token(Kind.OR, startPos, 1));
+						state = State.START;
+					}
+					break;
+				case IN_GOT_ORMINUS:
+					if (ch == '>') {
+						tokens.add(new Token(Kind.BARARROW, startPos, pos - startPos));
+						pos++;
+						state = State.START;
+					} else {
+						state = State.ERROR;
+					}
+					break;
+				case IN_DIV:
+					if (ch == '*') {
+						state = State.IN_COMMENT;
+						pos++;
+					} else {
+						tokens.add(new Token(Kind.DIV, startPos, 1));
+						state = State.START;
+					}
+					break;
+				case IN_COMMENT:
+					if ((pos+1)>=length)  {
+						state = State.START;
+					} else if (ch == '*' && (chars.charAt(pos+1) == '/')) {
+						state = State.IN_END_COMMENT;
+					}
+					pos++;
+					break;
+				case IN_END_COMMENT:
+					if (ch != '/') {
+						state = State.ERROR;
+					} else {
+						state = State.START;
+						pos++;
+					}
 					break;
 				case ERROR:
 					int line = 0;
