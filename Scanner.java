@@ -79,7 +79,6 @@ public class Scanner {
 		IN_FRAME_OP_KEYWORD,  /* a token - a terminal state */
 		IN_FILTER_OP_KEYWORD, /* a token - a terminal state */
 		IN_IMAGE_OP_KEYWORD,  /* a token - a terminal state */
-		IN_BOOLEAN_LITERAL,   /* a token - a terminal state */
 		IN_SEPERATOR,         /* a token - a terminal state */
 		IN_OPERATOR,          /* a token - a terminal state */
 		IN_INT_LITERAL,       /* a token - a terminal state */
@@ -353,8 +352,6 @@ public class Scanner {
 				case IN_FILTER_OP_KEYWORD:
 					break;
 				case IN_IMAGE_OP_KEYWORD:
-					break;
-				case IN_BOOLEAN_LITERAL:
 					break;
 				case IN_SEPERATOR:
 					break;
